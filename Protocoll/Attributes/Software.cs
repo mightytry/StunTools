@@ -1,6 +1,6 @@
-﻿using StunClient.Protocoll.Tools;
+﻿using StunTools.Protocoll.Tools;
 
-namespace StunClient.Protocoll.Attributes
+namespace StunTools.Protocoll.Attributes
 {
     public class Software : MessagePart
     {

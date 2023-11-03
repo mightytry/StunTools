@@ -1,4 +1,4 @@
-﻿namespace StunClient.Protocoll
+﻿namespace StunTools.Protocoll
 {
     public interface MessagePart
     {

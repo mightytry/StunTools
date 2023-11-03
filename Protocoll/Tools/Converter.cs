@@ -1,7 +1,7 @@
 ﻿using System.Buffers.Binary;
 using System.Text;
 
-namespace StunClient.Protocoll.Tools
+namespace StunTools.Protocoll.Tools
 {
     internal class Converter
     {

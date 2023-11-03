@@ -1,4 +1,4 @@
-﻿namespace StunClient.Protocoll.Attributes
+﻿namespace StunTools.Protocoll.Attributes
 {
     public class Base : MessagePart
     {

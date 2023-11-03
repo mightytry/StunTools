@@ -1,6 +1,6 @@
 ﻿using System.Net.Sockets;
 
-namespace StunClient
+namespace StunTools
 {
     public class Packet
     {

@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace StunClient.Tools
+namespace StunTools.Tools
 {
     public static class Compressor
     {

@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Net;
 
-namespace StunClient
+namespace StunTools
 {
     public class Message
     {

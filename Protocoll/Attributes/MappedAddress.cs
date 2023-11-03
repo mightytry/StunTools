@@ -1,7 +1,7 @@
-﻿using StunClient.Protocoll.Tools;
+﻿using StunTools.Protocoll.Tools;
 using System.Net;
 
-namespace StunClient.Protocoll.Attributes
+namespace StunTools.Protocoll.Attributes
 {
     public class MappedAddress : MessagePart
     {

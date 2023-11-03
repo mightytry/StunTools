@@ -1,5 +1,5 @@
 ﻿
-using StunClient.Tools;
+using StunTools.Tools;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -7,9 +7,9 @@ using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace StunClient
+namespace StunTools
 {
-    public class UdpSocket
+    public class UdpSocket: ISocket
     {
         public readonly Socket Socket;
         public IPEndPoint? LocalEndPoint { get => Socket.LocalEndPoint as IPEndPoint; }
@@ -22,22 +22,6 @@ namespace StunClient
             Socket.Bind(new IPEndPoint(IPAddress.Any, 0));
         }
 
-        public async Task<IPEndPoint?> GetPublicEndPoint()
-        {
-            Protocoll.Message message = new Protocoll.Message();
-            message.MessageParts.Add(new Protocoll.Attribute(Protocoll.Attribute.AttributeType.SOFTWARE, new Protocoll.Attributes.Software("StunClient - V0.0.1")));
-
-            return await GetPublicIpUdp(message);
-        }
-
-        public async Task<string?> GetCode()
-        {
-            if (await GetPublicEndPoint() is IPEndPoint endPoint)
-            {
-                return Compressor.Zip(endPoint);
-            }
-            return null;
-        }
 
         public async Task<Message?> Receive()
         {
@@ -56,7 +40,7 @@ namespace StunClient
                         }
                     }
                 }
-                catch
+                catch 
                 {
                     continue;
                 }
@@ -86,7 +70,7 @@ namespace StunClient
         }
 
 
-        private async Task<IPEndPoint?> GetPublicIpUdp(Protocoll.Message message)
+        internal override async Task<IPEndPoint?> GetPublicIp(Protocoll.Message message)
         {
             byte[] bytes = message.Serialize();
             CancellationTokenSource cts = new CancellationTokenSource(Hosts.TIMEOUT);
@@ -103,10 +87,12 @@ namespace StunClient
                     byte[] res = new byte[1024];
                     await Socket.ReceiveAsync(res, SocketFlags.None, cts.Token);
                     ress = new Protocoll.Message(res).TryGetAnyEndPoint();
+                    if (ress is null)
+                        throw new Exception();
                     cts.Cancel();
                     return;
                 }
-                catch (Exception)
+                catch 
                 {
                     try
                     {

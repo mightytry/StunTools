@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace StunClient.Protocoll
+namespace StunTools.Protocoll
 {
     public class Message
     {

@@ -1,11 +1,11 @@
 ﻿using System.Net.Sockets;
 using System.Net;
 
-namespace StunClient
+namespace StunTools
 {
     internal class Hosts
     {
-        public const int TIMEOUT = 2000;
+        public const int TIMEOUT = 10000;
 
 
         public static async Task<IPEndPoint?> SolveDns(string name, uint port)
