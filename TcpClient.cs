@@ -19,7 +19,7 @@ namespace StunTools
         }
 
 
-        public async Task<Message?> Receive()
+        public async Task<Message> Receive()
         {
             Packet result = new Packet();
             while (true)
@@ -30,11 +30,17 @@ namespace StunTools
                     var read = await Socket.ReceiveAsync(buffer, SocketFlags.None);
                     if (result.Receive(read))
                     {
-                        return Message.Deserilize(Encoding.UTF8.GetString(result.Buffer), Socket.RemoteEndPoint as IPEndPoint);
+                        Message? message = Message.Deserilize(Encoding.UTF8.GetString(result.Buffer), Socket.RemoteEndPoint as IPEndPoint);
+                        if (message is not null)
+                        {
+                            return message;
+                        }
+                        throw new Exception();
                     }
                 }
                 catch
                 {
+                    result = new Packet();
                     continue;
                 }
 

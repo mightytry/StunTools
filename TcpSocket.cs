@@ -31,8 +31,20 @@ namespace StunTools
 
         public async Task<TcpClient?> Connenct(IPEndPoint endPoint)
         {
+            
             Socket s = CreateSocket();
-            await s.ConnectAsync(endPoint.Address, endPoint.Port);
+            while (true)
+            {
+                try
+                {
+                    await s.ConnectAsync(endPoint.Address, endPoint.Port);
+                }
+                catch (SocketException)
+                {
+                    continue;
+                }
+                break;
+            }
             return new TcpClient(s);
         }
 
@@ -52,9 +64,18 @@ namespace StunTools
                     await s.SendAsync(bytes, SocketFlags.None, cts.Token);
                     byte[] res = new byte[1024];
                     await s.ReceiveAsync(res, SocketFlags.None, cts.Token);
-                    ress = new Protocoll.Message(res).TryGetAnyEndPoint();
-                    if (ress is null)
+                    IPEndPoint? msg = new Protocoll.Message(res).TryGetAnyEndPoint();
+                    if (msg is null)
                         throw new Exception();
+                    else if (ress is null)
+                    {
+                        ress = msg;
+                        throw new Exception();
+                    }
+                    else if (!ress.Equals(msg))
+                    {
+                        ress = null;
+                    }
                     cts.Cancel();
                     return;
                 }

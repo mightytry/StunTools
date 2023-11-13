@@ -1,4 +1,6 @@
-﻿using StunTools;    
+﻿using Microsoft.VisualBasic;
+using StunTools;
+using StunTools.Tools;
 
 namespace TestStun
 {
@@ -6,13 +8,14 @@ namespace TestStun
     {
         static void Main(string[] args)
         {
-            Run();
+            Run().Wait();
         }
         static async Task Run()
         {
             TcpSocket socket = new TcpSocket();
             await socket.UpdateCode();
-            Console.WriteLine(socket.Code);
+            Console.WriteLine(Compressor.Zip(socket.LocalEndPoint));
+            Console.WriteLine(Compressor.UnZip("3vCU6JlB"));
         }
     }
 }

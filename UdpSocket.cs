@@ -23,7 +23,7 @@ namespace StunTools
         }
 
 
-        public async Task<Message?> Receive()
+        public async Task<Message> Receive()
         {
             Packet result = new Packet();
             EndPoint remote = new IPEndPoint(IPAddress.Any, 0);
@@ -36,12 +36,18 @@ namespace StunTools
                     {
                         if (result.Receive(read.ReceivedBytes))
                         {
-                            return Message.Deserilize(Encoding.UTF8.GetString(result.Buffer), read.RemoteEndPoint as IPEndPoint);
+                            Message? message = Message.Deserilize(Encoding.UTF8.GetString(result.Buffer), read.RemoteEndPoint as IPEndPoint);
+                            if (message is not null)
+                            {
+                                return message;
+                            }
+                            throw new Exception();
                         }
                     }
                 }
                 catch 
                 {
+                    result = new Packet();
                     continue;
                 }
 
@@ -87,9 +93,18 @@ namespace StunTools
                     byte[] res = new byte[1024];
                     await Socket.ReceiveAsync(res, SocketFlags.None, cts.Token);
                     ress = new Protocoll.Message(res).TryGetAnyEndPoint();
-                    if (ress is null)
+                    IPEndPoint? msg = new Protocoll.Message(res).TryGetAnyEndPoint();
+                    if (msg is null)
                         throw new Exception();
-                    cts.Cancel();
+                    else if (ress is null)
+                    {
+                        ress = msg;
+                        throw new Exception();
+                    }
+                    else if (!ress.Equals(msg))
+                    {
+                        ress = null;
+                    }
                     return;
                 }
                 catch 
