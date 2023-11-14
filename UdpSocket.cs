@@ -12,7 +12,7 @@ namespace StunTools
     public class UdpSocket: ISocket
     {
         public readonly Socket Socket;
-        public IPEndPoint? LocalEndPoint { get => Socket.LocalEndPoint as IPEndPoint; }
+        protected override IPEndPoint? localEndPoint { get => Socket.LocalEndPoint as IPEndPoint; }
 
         private HashSet<IPEndPoint> stunEndPoints = new HashSet<IPEndPoint>();
 
@@ -76,11 +76,12 @@ namespace StunTools
         }
 
 
-        internal override async Task<IPEndPoint?> GetPublicIp(Protocoll.Message message)
+        internal override async Task<(AdressBehaviorType, IPEndPoint?)> GetPublicIp(Protocoll.Message message)
         {
             byte[] bytes = message.Serialize();
             CancellationTokenSource cts = new CancellationTokenSource(Hosts.TIMEOUT);
             IPEndPoint? ress = null;
+            IPEndPoint? msg = null;
             await Task.WhenAny(Hosts.List.Select(async (x) =>
             {
                 try
@@ -92,8 +93,8 @@ namespace StunTools
                     await Socket.SendToAsync(bytes, SocketFlags.None, ep, cts.Token);
                     byte[] res = new byte[1024];
                     await Socket.ReceiveAsync(res, SocketFlags.None, cts.Token);
-                    ress = new Protocoll.Message(res).TryGetAnyEndPoint();
-                    IPEndPoint? msg = new Protocoll.Message(res).TryGetAnyEndPoint();
+
+                    msg = new Protocoll.Message(res).TryGetAnyEndPoint();
                     if (msg is null)
                         throw new Exception();
                     else if (ress is null)
@@ -101,10 +102,7 @@ namespace StunTools
                         ress = msg;
                         throw new Exception();
                     }
-                    else if (!ress.Equals(msg))
-                    {
-                        ress = null;
-                    }
+                    cts.Cancel();
                     return;
                 }
                 catch 
@@ -121,7 +119,23 @@ namespace StunTools
                 }
                 
             }).ToArray());
-            return ress;
+            return ((ress?.Equals(msg) ?? true) ? AdressBehaviorType.EndPointIndependent : AdressBehaviorType.EndPointDependent, ress);
+        }
+
+        protected override async Task<bool> isReachable()
+        {
+            UdpSocket s = new UdpSocket();
+            await s.UpdateCode(false);
+            await SendData("Test", s.PublicEndPoint);
+            await s.SendData("Test", PublicEndPoint!);
+            try
+            {
+                return (await Receive().WaitAsync(TimeSpan.FromMilliseconds(500))).GetData() == "Test";
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

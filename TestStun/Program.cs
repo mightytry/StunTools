@@ -12,10 +12,18 @@ namespace TestStun
         }
         static async Task Run()
         {
-            TcpSocket socket = new TcpSocket();
+            UdpSocket socket = new ();
             await socket.UpdateCode();
-            Console.WriteLine(Compressor.Zip(socket.LocalEndPoint));
-            Console.WriteLine(Compressor.UnZip("3vCU6JlB"));
+            UdpSocket socket2 = new ();
+            await socket2.UpdateCode();
+            Console.WriteLine(socket2.PublicEndPoint);
+            Console.WriteLine(socket.IsReachable);
+            Console.WriteLine(socket2.IsReachable);
+            socket.SendData("Hello World!", socket2.PublicEndPoint);
+            socket2.SendData("Hello World!", socket.PublicEndPoint);
+            socket.SendData("Hello World!", socket2.PublicEndPoint);
+            Console.WriteLine((await socket2.Receive()).GetData());
+            
         }
     }
 }
